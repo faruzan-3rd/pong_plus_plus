@@ -1,2 +1,5 @@
 .vscode/
-app
+util/libs/
+bin/
+compile.bat
+run.bat
