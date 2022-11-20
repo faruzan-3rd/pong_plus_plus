@@ -31,8 +31,6 @@ int main(int argc, char const *argv[])
 
     PongManager manager(window, player_offset, player_width, player_height,
                         player_thickness, ball_radius, ball_thickness, default_player_spd, default_ball_spd);
-    manager.setup();
-
 
     while (window.isOpen())
     {

@@ -13,7 +13,7 @@ sf::Vector2<float> utl::get_topleft_corner(sf::Vector2<float> middle, const floa
 
 void utl::build_rectangle(sf::ConvexShape& target, const sf::Vector2<float>& middle, const float width, const float height){
     if(target.getPointCount() != 4){
-        // std::cout << "Point count must be 4" << std::endl;
+        std::cout << "Point count must be 4" << std::endl;
         return;
     }
     sf::Vector2<float> topleft {utl::get_topleft_corner(middle, width, height)};
@@ -31,12 +31,11 @@ void utl::clamp_vector(const float x_minimum, const float x_maximum, const float
 
 
 sf::Vector2f utl::get_random_launch_vector(){
-    std::random_device seed;
-    std::default_random_engine engine(seed());
-    std::uniform_real_distribution<> prob(0, 1.0);
+    std::mt19937 engine((unsigned) time(NULL));
+    std::uniform_int_distribution<std::mt19937::result_type> prob(0, 5);
 
-    double launch_angle {prob(engine) * 12 * 60 * deg2rad};
-    // std::cout << launch_angle << std::endl;
+    int random {prob(engine)};
+    double launch_angle {random * 60 * deg2rad};
     sf::Vector2f launch_vec {(float)cos(launch_angle), (float)sin(launch_angle)};
     return launch_vec;
 }
