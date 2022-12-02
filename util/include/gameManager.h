@@ -12,7 +12,8 @@ class PongManager{
         PongManager(sf::RenderWindow& window, const int player_offset,
                     const int player_width, const int player_height, const float player_thickness,
                     const float ball_radius,const float ball_thickness,
-                    const float default_player_spd, const float default_ball_spd);
+                    const float default_player_spd, const float default_ball_spd, const sf::Font& font_file,
+                    const unsigned int font_size, const sf::Vector2f& score_position);
 
         void setup();
         void render();
@@ -35,7 +36,14 @@ class PongManager{
         float default_player_spd;
         float default_ball_spd;
         int last_update;
+        
+        int right_score;
+        int left_score;
+        sf::Font font;
+        sf::Text score_text;
+        const sf::Vector2f score_pos;
 
+        
 };
 
 

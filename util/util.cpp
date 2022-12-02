@@ -34,7 +34,7 @@ sf::Vector2f utl::get_random_launch_vector(){
     std::mt19937 engine((unsigned) time(NULL));
     std::uniform_int_distribution<std::mt19937::result_type> prob(0, 5);
 
-    int random {prob(engine)};
+    int random {(int)prob(engine)};
     double launch_angle {random * 60 * deg2rad};
     sf::Vector2f launch_vec {(float)cos(launch_angle), (float)sin(launch_angle)};
     return launch_vec;
@@ -49,7 +49,7 @@ bool utl::intersect(float a1, float a2, float b1, float b2){
 
 
 sf::Vector2f utl::get_new_vector(const float player_y, const float player_height, const float ball_y, const sf::Vector2f old_dir){
-    double new_angle {((ball_y - player_y) / (player_height / 2)) * 75 * deg2rad};
+    double new_angle {((ball_y - player_y) / (player_height / 2)) * 60 * deg2rad};
 
     sf::Vector2f new_vec((float)cos(new_angle), (float)-sin(new_angle));
     if(old_dir.x > 0){

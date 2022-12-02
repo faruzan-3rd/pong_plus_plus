@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "util/util.h"
-#include "util/gameManager.h"
+#include "util.h"
+#include "gameManager.h"
 
 
 int main(int argc, char const *argv[])
@@ -28,9 +28,12 @@ int main(int argc, char const *argv[])
     int timing {40};
     int cnt{0};
 
+    sf::Font font {sf::Font()};
+    font.loadFromFile("arcadeclassic.ttf");
 
     PongManager manager(window, player_offset, player_width, player_height,
-                        player_thickness, ball_radius, ball_thickness, default_player_spd, default_ball_spd);
+                        player_thickness, ball_radius, ball_thickness, default_player_spd, default_ball_spd,
+                        font, 30, sf::Vector2f(width / 2, 30));
 
     while (window.isOpen())
     {

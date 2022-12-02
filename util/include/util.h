@@ -1,6 +1,8 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#define _USE_MATH_DEFINES
+
 #include <SFML/Graphics.hpp>
 #include <math.h>
 
