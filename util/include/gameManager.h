@@ -2,7 +2,7 @@
 #define _GAMEMNG_H
 
 #include <SFML/Graphics.hpp>
-#include "playerbar.h"
+#include "paddle.h"
 #include "ball.h"
 
 
