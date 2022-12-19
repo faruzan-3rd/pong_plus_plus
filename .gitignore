@@ -3,5 +3,6 @@ util/libs/
 bin/
 compile.bat
 run.bat
+yea.bat
 arcadeclassic.ttf
 font_pixel.otf
