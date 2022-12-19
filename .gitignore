@@ -4,5 +4,8 @@ bin/
 compile.bat
 run.bat
 yea.bat
+server.bat
+server
+server.exe
 arcadeclassic.ttf
 font_pixel.otf

@@ -103,7 +103,7 @@ int main(int argc, char const *argv[])
                     std::vector<std::string> input(0);
                     ifs.open("multiplay_cfg.txt");
                     while (getline(ifs, line)) {
-                        if(line.ends_with('\n')) line.erase(line.end() - 1);
+                        if(*(line.end() - 1) == '\n') line.erase(line.end() - 1);
                         input.push_back(line);
                     }
                     if(input.size() < 2){
