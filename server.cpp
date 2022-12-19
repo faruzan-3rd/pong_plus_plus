@@ -34,9 +34,11 @@ int main(){
     while(1){
         std::size_t received = 0;
         socket.receive(buffer, sizeof(buffer), received);
-        std::cout << "The client said: " << buffer << std::endl;
-        std::string response{"Hello world from the server!"};
-        socket.send(response.c_str(), response.size() + 1);
+        if(received > 0){
+            std::cout << "The client said: " << buffer << std::endl;
+            std::string response{"Hello world from the server!"};
+            socket.send(response.c_str(), response.size() + 1);
+        }
     }
     
 }
