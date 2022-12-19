@@ -24,10 +24,16 @@ int main(){
 
     sf::TcpListener listener;
     listener.listen(port);
+
     // Wait for a connection
     sf::TcpSocket socket;
-    listener.accept(socket);
-    std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
+
+    while(1){
+        if(listener.accept(socket) == sf::Socket::Done){
+            std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
+            break;
+        }
+    }
     // Receive a message from the client
     char buffer[1024];
 
