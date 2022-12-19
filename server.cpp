@@ -24,12 +24,19 @@ int main(){
 
     sf::TcpListener listener;
     listener.setBlocking(true);
-    listener.listen(port);
 
+    if(listener.listen(port) != sf::Socket::Done){
+        std::cout << "Error" << std::endl;
+        listener.close();
+        return 0;
+    }
     // Wait for a connection
     sf::TcpSocket socket;
-
-    listener.accept(socket);
+    if(listener.accept(socket) != sf::Socket::Done){
+        std::cout << "Error" << std::endl;
+        listener.close();
+        return 0;
+    }
     std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
     
     // Receive a message from the client
