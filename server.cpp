@@ -23,17 +23,15 @@ int main(){
     ip = input[0]; port = std::stoi(input[1]);
 
     sf::TcpListener listener;
+    listener.setBlocking(true);
     listener.listen(port);
 
     // Wait for a connection
     sf::TcpSocket socket;
 
-    while(1){
-        if(listener.accept(socket) == sf::Socket::Done){
-            std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
-            break;
-        }
-    }
+    listener.accept(socket);
+    std::cout << "New client connected: " << socket.getRemoteAddress() << std::endl;
+    
     // Receive a message from the client
     char buffer[1024];
 
