@@ -17,7 +17,7 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocke
 
 
 void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
-                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket);
+                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket, bool& running);
 
 void register_pressed_key(std::set<sf::Keyboard::Key>& pressed_now);
 
@@ -64,8 +64,11 @@ int main(int argc, char const *argv[])
     sf::Text multiplayer_lbl("Multi player", font, 20);
     multiplayer_lbl.setPosition(sf::Vector2f(width / 2 - 50, 300));
 
-    int choice_index{0}, choice_size{2};
-    int y_list[] = {270, 320};
+    sf::Text quit_lbl("Quit", font, 20);
+    quit_lbl.setPosition(sf::Vector2f(width / 2 - 50, 350));
+
+    int y_list[] = {265, 315, 365};
+    int choice_index{0}, choice_size{3};
     sf::ConvexShape choice_triangle(3);
     bool last_up_pressed{false}, last_down_pressed{false};
     choice_triangle.setPoint(0, sf::Vector2f(0, 10));
@@ -83,7 +86,9 @@ int main(int argc, char const *argv[])
     std::set<sf::Keyboard::Key> pressed;
     std::set<sf::Keyboard::Key> pressed_now;
 
-    while (window.isOpen())
+    bool running = true;
+
+    while (window.isOpen() && running)
     {
         sf::Event event;
         while (window.pollEvent(event))
@@ -99,13 +104,14 @@ int main(int argc, char const *argv[])
         if(current_state == mainmenu){
             arrow_movement(pressed, pressed_now, choice_index, choice_size);
 
-            on_enter_behaviour(pressed, pressed_now, choice_index, current_state, ifs, ip, port, socket);
+            on_enter_behaviour(pressed, pressed_now, choice_index, current_state, ifs, ip, port, socket, running);
 
             register_pressed_key(pressed_now);
             choice_triangle.setPosition(sf::Vector2f(width / 2 - 75, y_list[choice_index]));
             window.draw(title);
             window.draw(singleplayer_lbl);
             window.draw(multiplayer_lbl);
+            window.draw(quit_lbl);
             window.draw(choice_triangle);
         }
         else if(current_state == single){
@@ -135,11 +141,11 @@ int main(int argc, char const *argv[])
 
 void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, int& choice_size){
     if(utl::key_down(sf::Keyboard::Up, pressed)){
-        choice_index = (choice_index + 1) % choice_size;   
+        choice_index = (choice_index - 1 + choice_size) % choice_size;   
     }
     
     if(utl::key_down(sf::Keyboard::Down, pressed)){
-        choice_index = (choice_index - 1 + choice_size) % choice_size;
+        choice_index = (choice_index + 1) % choice_size;
     }
 }
 
@@ -166,11 +172,12 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocke
 
 
 void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
-                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket){
+                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket, bool& running){
     if(!utl::key_down(sf::Keyboard::Enter, pressed)) return;
 
     if(choice_index == 0){
         current_state = single;
+
     }else if(choice_index == 1){
         connect2server(ifs, ip, port, socket);
         
@@ -180,6 +187,9 @@ void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keybo
         std::size_t received = 0;
         socket.receive(buffer, sizeof(buffer), received);
         std::cout << "The server said: " << buffer << std::endl;
+
+    }else if(choice_index == 2){
+        running = false;
     }
     
 }
