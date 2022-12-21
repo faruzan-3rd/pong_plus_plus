@@ -78,3 +78,8 @@ utl::CollisionData utl::get_collision_data(const sf::Vector2f player_pos, const 
     return col;
 }
 
+
+bool utl::key_down(const sf::Keyboard::Key& key, std::set<sf::Keyboard::Key>& pressed_last_frame){
+    return sf::Keyboard::isKeyPressed(key) && !(std::find(pressed_last_frame.begin(), pressed_last_frame.end(), key) != pressed_last_frame.end());
+}
+

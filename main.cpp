@@ -7,13 +7,26 @@
 #include "gameManager.h"
 
 
+const char mainmenu{'m'}, single{'s'}, multi{'l'};
+
+
+void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, int& choice_size);
+
+
+void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket);
+
+
+void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
+                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket);
+
+void register_pressed_key(std::set<sf::Keyboard::Key>& pressed_now);
+
+
 int main(int argc, char const *argv[])
 {
     int width{800};
     int height{600};
     sf::RenderWindow window(sf::VideoMode(width, height), "Pong in C++!");
-
-    const char mainmenu{'m'}, single{'s'}, multi{'l'};
 
     // Config
     int player_offset{55};
@@ -60,6 +73,15 @@ int main(int argc, char const *argv[])
     choice_triangle.setPoint(2, sf::Vector2f(10, 0));
     choice_triangle.setPosition(sf::Vector2f(width / 2 - 75, y_list[choice_index]));
 
+    sf::TcpSocket socket;
+    std::ifstream ifs;
+    std::string line;
+    std::string ip;
+    int port{-1};
+    bool connected{0};
+
+    std::set<sf::Keyboard::Key> pressed;
+    std::set<sf::Keyboard::Key> pressed_now;
 
     while (window.isOpen())
     {
@@ -72,56 +94,14 @@ int main(int argc, char const *argv[])
         }
 
         window.clear();
+        pressed = pressed_now;
+        pressed_now.clear();
         if(current_state == mainmenu){
-            // Arrow movement
-            if(!last_up_pressed && (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))){
-                last_up_pressed = true;
-                choice_index = (choice_index + 1) % choice_size;
-            }
-            if(!(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))){
-                last_up_pressed = false;
-            }
-            
-            if(!last_down_pressed && (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))){
-                last_down_pressed = true;
-                choice_index = (choice_index - 1 + choice_size) % choice_size;
-            }
-            if(!(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))){
-                last_down_pressed = false;
-            }
-            // =======
+            arrow_movement(pressed, pressed_now, choice_index, choice_size);
 
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)){
-                if(choice_index == 0){
-                    current_state = single;
-                }else if(choice_index == 1){
-                    sf::TcpSocket socket;
-                    std::ifstream ifs;
-                    std::string line;
-                    std::string ip;
-                    int port{-1};
-                    std::vector<std::string> input(0);
-                    ifs.open("multiplay_cfg.txt");
-                    while (getline(ifs, line)) {
-                        if(*(line.end() - 1) == '\n') line.erase(line.end() - 1);
-                        input.push_back(line);
-                    }
-                    if(input.size() < 2){
-                        std::cout << "Error in cfg file." << std::endl;
-                        continue;
-                    }
-                    ip = input[0]; port = std::stoi(input[1]);
+            on_enter_behaviour(pressed, pressed_now, choice_index, current_state, ifs, ip, port, socket);
 
-                    socket.connect(ip, port);
-                    std::string msg{"ping"};
-                    socket.send(msg.c_str(), msg.size() + 1);
-                    char buffer[1024];
-                    std::size_t received = 0;
-                    socket.receive(buffer, sizeof(buffer), received);
-                    std::cout << "The server said: " << buffer << std::endl;
-                }
-            }
-
+            register_pressed_key(pressed_now);
             choice_triangle.setPosition(sf::Vector2f(width / 2 - 75, y_list[choice_index]));
             window.draw(title);
             window.draw(singleplayer_lbl);
@@ -145,7 +125,67 @@ int main(int argc, char const *argv[])
         //     sum = 0;
         // }
         
+        
     }
 
     return 0;
+}
+
+
+
+void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, int& choice_size){
+    if(utl::key_down(sf::Keyboard::Up, pressed)){
+        choice_index = (choice_index + 1) % choice_size;   
+    }
+    
+    if(utl::key_down(sf::Keyboard::Down, pressed)){
+        choice_index = (choice_index - 1 + choice_size) % choice_size;
+    }
+}
+
+void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket){
+    if(socket.getRemoteAddress() != sf::IpAddress::None){
+        return;
+    }
+
+    std::string line;
+    std::vector<std::string> input(0);
+    ifs.open("multiplay_cfg.txt");
+    while (getline(ifs, line)) {
+        if(*(line.end() - 1) == '\n') line.erase(line.end() - 1);
+        input.push_back(line);
+    }
+    if(input.size() < 2){
+        std::cout << "Error in cfg file." << std::endl;
+        return;
+    }
+    ip = input[0]; port = std::stoi(input[1]);
+
+    socket.connect(ip, port);
+}
+
+
+void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
+                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket){
+    if(!utl::key_down(sf::Keyboard::Enter, pressed)) return;
+
+    if(choice_index == 0){
+        current_state = single;
+    }else if(choice_index == 1){
+        connect2server(ifs, ip, port, socket);
+        
+        std::string msg{"ping"};
+        socket.send(msg.c_str(), msg.size() + 1);
+        char buffer[1024];
+        std::size_t received = 0;
+        socket.receive(buffer, sizeof(buffer), received);
+        std::cout << "The server said: " << buffer << std::endl;
+    }
+    
+}
+
+void register_pressed_key(std::set<sf::Keyboard::Key>& pressed_now){
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) pressed_now.insert(sf::Keyboard::Up);
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) pressed_now.insert(sf::Keyboard::Down);
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) pressed_now.insert(sf::Keyboard::Enter);
 }
