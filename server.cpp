@@ -32,24 +32,54 @@ int main(){
     player2.setBlocking(false);
 
     std::cout << "Waiting for players" << std::endl;
-    while(player1.getRemoteAddress() == sf::IpAddress::None || player2.getRemoteAddress() == sf::IpAddress::None){
-        if(player1.getRemoteAddress() == sf::IpAddress::None && listener1.listen(port)){
-            std::cout << "Port listen 1" << std::endl;
-            if(listener1.accept(player1) != sf::Socket::Done){
-                std::cout << "Error 1" << std::endl;
-                continue;
-            }
-            std::cout << "Player1 connected: " << player1.getRemoteAddress() << std::endl;
-        }
-        else if(player2.getRemoteAddress() == sf::IpAddress::None && listener2.listen(port)){
-            std::cout << "Port listen 2" << std::endl;
-            if(listener2.accept(player2) != sf::Socket::Done){
-                std::cout << "Error 2" << std::endl;
-                continue;
-            }
-            std::cout << "Player2 connected: " << player2.getRemoteAddress() << std::endl;
-        }
+
+    if(listener1.listen(port) != sf::Socket::Done){
+        std::cout << "Error 1a" << std::endl;
+        listener1.close();
+        return 0;
     }
+    // Wait for a connection
+    if(listener1.accept(player1) != sf::Socket::Done){
+        std::cout << "Error 1b" << std::endl;
+        listener1.close();
+        return 0;
+    }
+    std::cout << "New client connected: " << player1.getRemoteAddress() << std::endl;
+
+
+    if(listener2.listen(port) != sf::Socket::Done){
+        std::cout << "Error 2a" << std::endl;
+        listener2.close();
+        return 0;
+    }
+    // Wait for a connection
+    if(listener2.accept(player2) != sf::Socket::Done){
+        std::cout << "Error 2b" << std::endl;
+        listener2.close();
+        return 0;
+    }
+    std::cout << "New client connected: " << player1.getRemoteAddress() << std::endl;
+
+
+
+    // while(player1.getRemoteAddress() == sf::IpAddress::None || player2.getRemoteAddress() == sf::IpAddress::None){
+    //     if(player1.getRemoteAddress() == sf::IpAddress::None && listener1.listen(port)){
+    //         std::cout << "Port listen 1" << std::endl;
+    //         if(listener1.accept(player1) != sf::Socket::Done){
+    //             std::cout << "Error 1" << std::endl;
+    //             continue;
+    //         }
+    //         std::cout << "Player1 connected: " << player1.getRemoteAddress() << std::endl;
+    //     }
+    //     else if(player2.getRemoteAddress() == sf::IpAddress::None && listener2.listen(port)){
+    //         std::cout << "Port listen 2" << std::endl;
+    //         if(listener2.accept(player2) != sf::Socket::Done){
+    //             std::cout << "Error 2" << std::endl;
+    //             continue;
+    //         }
+    //         std::cout << "Player2 connected: " << player2.getRemoteAddress() << std::endl;
+    //     }
+    // }
     std::cout << "Both players have connected" << std::endl;
 
     // if(listener.listen(port) != sf::Socket::Done){
