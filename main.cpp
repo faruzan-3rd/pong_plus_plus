@@ -13,11 +13,11 @@ const char mainmenu{'m'}, single{'s'}, multi{'l'};
 void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, int& choice_size);
 
 
-void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket);
+void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::UdpSocket& socket, bool& connected);
 
 
 void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
-                         std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket, bool& running);
+                         std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::UdpSocket& socket, bool& running, bool& connected);
 
 void register_pressed_key(std::set<sf::Keyboard::Key>& pressed_now);
 
@@ -76,7 +76,7 @@ int main(int argc, char const *argv[])
     choice_triangle.setPoint(2, sf::Vector2f(10, 0));
     choice_triangle.setPosition(sf::Vector2f(width / 2 - 75, y_list[choice_index]));
 
-    sf::TcpSocket socket;
+    sf::UdpSocket socket;
     std::ifstream ifs;
     std::string line;
     std::string ip;
@@ -105,7 +105,7 @@ int main(int argc, char const *argv[])
         if(current_state == mainmenu){
             arrow_movement(pressed, pressed_now, choice_index, choice_size);
 
-            on_enter_behaviour(pressed, pressed_now, choice_index, current_state, ifs, ip, port1, port2, socket, running);
+            on_enter_behaviour(pressed, pressed_now, choice_index, current_state, ifs, ip, port1, port2, socket, running, connected);
 
             register_pressed_key(pressed_now);
             choice_triangle.setPosition(sf::Vector2f(width / 2 - 75, y_list[choice_index]));
@@ -150,8 +150,8 @@ void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard:
     }
 }
 
-void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket){
-    if(socket.getRemoteAddress() != sf::IpAddress::None){
+void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::UdpSocket& socket, bool& connected){
+    if(connected){
         return;
     }
 
@@ -170,41 +170,51 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2,
     ip = input[0]; port1 = std::stoi(input[1]); port2 = std::stoi(input[2]);
     std::cout << "Connecting to " << ip << " " << port1 << std::endl;
 
-    int res = socket.connect(ip, port1);
-    if(res == sf::Socket::Done){
-        std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
-        std::cout << "Player 1" << std::endl;
+    char buffer[1024];
+    std::string response;
+    std::string msg = "connect";
+    sf::IpAddress server; unsigned short sport;
+    size_t received;
+
+    socket.send(msg.c_str(), msg.size() + 1, ip, port1);
+    socket.receive(buffer, sizeof(buffer), received, server, sport);
+    response = std::string(buffer);
+
+    if(server.toString() != ip){
+        std::cout << "Not the actual server: " << server.toString() << std::endl;
+        return;
+    }
+
+    if(response == "player1" || response == "player2"){
+        connected = true;
+        std::cout << response << std::endl;
     }
     else{
-        std::cout << "Attempting port2..." << std::endl;
-
-        res = socket.connect(ip, port2);
-        if(res == sf::Socket::Done){
-            std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
-            std::cout << "Player 2" << std::endl;
-        }else{
-            std::cout << "Failed" << std::endl;
-        }
+        std::cout << "Could not connect for some reason" << std::endl;
     }
 
 }
 
 
 void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
-                         std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket, bool& running){
+                         std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::UdpSocket& socket, bool& running, bool& connected){
     if(!utl::key_down(sf::Keyboard::Enter, pressed)) return;
 
     if(choice_index == 0){
         current_state = single;
 
     }else if(choice_index == 1){
-        connect2server(ifs, ip, port1, port2, socket);
+        connect2server(ifs, ip, port1, port2, socket, connected);
         
         std::string msg{"ping"};
-        socket.send(msg.c_str(), msg.size() + 1);
+        socket.send(msg.c_str(), msg.size() + 1, ip, port1);
         char buffer[1024];
         std::size_t received = 0;
-        socket.receive(buffer, sizeof(buffer), received);
+        sf::IpAddress server; unsigned short sport;
+        socket.receive(buffer, sizeof(buffer), received, server, sport);
+
+        if(server != ip) return;
+
         std::cout << "The server said: " << buffer << std::endl;
 
     }else if(choice_index == 2){
