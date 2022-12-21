@@ -37,7 +37,7 @@ int main(){
     std::size_t received = 0;
     std::string msg;
 
-    while(player1.getPublicAddress() == sf::IpAddress::None || player2.getPublicAddress() == sf::IpAddress::None){
+    while(player1 == sf::IpAddress::None || player2 == sf::IpAddress::None){
         socket.receive(buffer, sizeof(buffer), received, sender, sport);
         msg = std::string(buffer);
         if(msg == "connect"){
