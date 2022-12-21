@@ -154,6 +154,7 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocke
         return;
     }
 
+    ifs.close();
     std::string line;
     std::vector<std::string> input(0);
     ifs.open("multiplay_cfg.txt");
@@ -168,7 +169,8 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocke
     ip = input[0]; port = std::stoi(input[1]);
     std::cout << "Connecting to " << ip << " " << port << std::endl;
 
-    socket.connect(ip, port);
+    std::cout << socket.connect(ip, port) << std::endl;
+    std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
 }
 
 

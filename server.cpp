@@ -25,22 +25,29 @@ int main(){
     }
     ip = input[0]; port = std::stoi(input[1]);
 
-    sf::TcpListener listener;
-    listener.setBlocking(false);
+    sf::TcpListener listener1, listener2;
+
     sf::TcpSocket player1, player2;
     player1.setBlocking(false);
     player2.setBlocking(false);
 
     std::cout << "Waiting for players" << std::endl;
     while(player1.getRemoteAddress() == sf::IpAddress::None || player2.getRemoteAddress() == sf::IpAddress::None){
-        if(listener.listen(port) == sf::Socket::Done){
-            std::cout << "Port listen" << std::endl;
-            int ret = assign_player(player1, player2, listener);
-
-            if(ret != -1){
-                std::cout << "Player " << ret << " has connected! ";
-                std::cout << "Address: " << (ret == 1 ? player1 : player2).getRemoteAddress() << std::endl;
+        if(player1.getRemoteAddress() == sf::IpAddress::None && listener1.listen(port)){
+            std::cout << "Port listen 1" << std::endl;
+            if(listener1.accept(player1) != sf::Socket::Done){
+                std::cout << "Error 1" << std::endl;
+                continue;
             }
+            std::cout << "Player1 connected: " << player1.getRemoteAddress() << std::endl;
+        }
+        else if(player2.getRemoteAddress() == sf::IpAddress::None && listener2.listen(port)){
+            std::cout << "Port listen 2" << std::endl;
+            if(listener2.accept(player2) != sf::Socket::Done){
+                std::cout << "Error 2" << std::endl;
+                continue;
+            }
+            std::cout << "Player2 connected: " << player2.getRemoteAddress() << std::endl;
         }
     }
     std::cout << "Both players have connected" << std::endl;
@@ -86,13 +93,13 @@ int main(){
 
 int assign_player(sf::TcpSocket& player1, sf::TcpSocket& player2, sf::TcpListener& listener){
     if(player1.getRemoteAddress() != sf::IpAddress::None){
+
         if(listener.accept(player2) == sf::Socket::Done){
             return 2;
         }else{
             return -1;
         }
     }else{
-        std::cout << "wwwwwwww" << std::endl;
         if(listener.accept(player1) == sf::Socket::Done){
             return 1;
         }else{
