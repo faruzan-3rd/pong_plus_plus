@@ -45,6 +45,8 @@ int main(){
             std::string return_msg;
             if(code > 0){
                 return_msg = "player" + std::to_string(code);
+            }else if(code == -1){
+                return_msg = "already_connected";
             }else{
                 return_msg = "no";
             }

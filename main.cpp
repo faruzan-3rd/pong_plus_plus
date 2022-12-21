@@ -189,8 +189,12 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2,
         connected = true;
         std::cout << response << std::endl;
     }
+    else if(response == "already_connected"){
+        connected = true;
+        std::cout << "Reconnected" << std::endl;
+    }
     else{
-        std::cout << "Could not connect for some reason" << std::endl;
+        std::cout << "Could not connect for some reason: " << response << std::endl;
     }
 
 }
