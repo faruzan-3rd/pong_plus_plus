@@ -13,7 +13,7 @@ const char mainmenu{'m'}, single{'s'}, multi{'l'};
 void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, int& choice_size);
 
 
-int connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket);
+void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket);
 
 
 void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
@@ -150,7 +150,7 @@ void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard:
     }
 }
 
-int connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket){
+void connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket){
     if(socket.getRemoteAddress() != sf::IpAddress::None){
         return;
     }
@@ -165,7 +165,7 @@ int connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, 
     }
     if(input.size() < 3){
         std::cout << "Error in cfg file." << std::endl;
-        return 2;
+        return;
     }
     ip = input[0]; port1 = std::stoi(input[1]); port2 = std::stoi(input[2]);
     std::cout << "Connecting to " << ip << " " << port1 << std::endl;
@@ -173,7 +173,7 @@ int connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, 
     int res = socket.connect(ip, port1);
     if(res == sf::Socket::Done){
         std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
-        return 1;
+        std::cout << "Player 1" << std::endl;
     }
     else{
         std::cout << "Attempting port2..." << std::endl;
@@ -181,7 +181,7 @@ int connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, 
         res = socket.connect(ip, port2);
         if(res == sf::Socket::Done){
             std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
-            return 1;
+            std::cout << "Player 2" << std::endl;
         }else{
             std::cout << "Failed" << std::endl;
         }
