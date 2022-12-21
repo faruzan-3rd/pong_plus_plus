@@ -12,18 +12,18 @@ int main(){
     std::ifstream ifs;
     std::string line;
     std::string ip;
-    int port{-1};
+    int port1{-1}, port2{-1};
     std::vector<std::string> input(0);
     ifs.open("multiplay_cfg.txt");
     while (getline(ifs, line)) {
         if(*(line.end() - 1) == '\n') line.erase(line.end() - 1);
         input.push_back(line);
     }
-    if(input.size() < 2){
+    if(input.size() < 3){
         std::cout << "Error in cfg file." << std::endl;
         return 0;
     }
-    ip = input[0]; port = std::stoi(input[1]);
+    ip = input[0]; port1 = std::stoi(input[1]); port2 = std::stoi(input[2]);
 
     sf::TcpListener listener1, listener2;
 
@@ -33,7 +33,7 @@ int main(){
 
     std::cout << "Waiting for players" << std::endl;
 
-    if(listener1.listen(port) != sf::Socket::Done){
+    if(listener1.listen(port1) != sf::Socket::Done){
         std::cout << "Error 1a" << std::endl;
         listener1.close();
         return 0;
@@ -47,7 +47,7 @@ int main(){
     std::cout << "New client connected: " << player1.getRemoteAddress() << std::endl;
 
 
-    if(listener2.listen(port) != sf::Socket::Done){
+    if(listener2.listen(port2) != sf::Socket::Done){
         std::cout << "Error 2a" << std::endl;
         listener2.close();
         return 0;

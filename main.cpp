@@ -13,11 +13,11 @@ const char mainmenu{'m'}, single{'s'}, multi{'l'};
 void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, int& choice_size);
 
 
-void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket);
+int connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket);
 
 
 void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
-                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket, bool& running);
+                         std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket, bool& running);
 
 void register_pressed_key(std::set<sf::Keyboard::Key>& pressed_now);
 
@@ -80,7 +80,8 @@ int main(int argc, char const *argv[])
     std::ifstream ifs;
     std::string line;
     std::string ip;
-    int port{-1};
+    int port1{-1};
+    int port2{-1};
     bool connected{0};
 
     std::set<sf::Keyboard::Key> pressed;
@@ -104,7 +105,7 @@ int main(int argc, char const *argv[])
         if(current_state == mainmenu){
             arrow_movement(pressed, pressed_now, choice_index, choice_size);
 
-            on_enter_behaviour(pressed, pressed_now, choice_index, current_state, ifs, ip, port, socket, running);
+            on_enter_behaviour(pressed, pressed_now, choice_index, current_state, ifs, ip, port1, port2, socket, running);
 
             register_pressed_key(pressed_now);
             choice_triangle.setPosition(sf::Vector2f(width / 2 - 75, y_list[choice_index]));
@@ -149,7 +150,7 @@ void arrow_movement(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard:
     }
 }
 
-void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket){
+int connect2server(std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket){
     if(socket.getRemoteAddress() != sf::IpAddress::None){
         return;
     }
@@ -162,27 +163,42 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocke
         if(*(line.end() - 1) == '\n') line.erase(line.end() - 1);
         input.push_back(line);
     }
-    if(input.size() < 2){
+    if(input.size() < 3){
         std::cout << "Error in cfg file." << std::endl;
-        return;
+        return 2;
     }
-    ip = input[0]; port = std::stoi(input[1]);
-    std::cout << "Connecting to " << ip << " " << port << std::endl;
+    ip = input[0]; port1 = std::stoi(input[1]); port2 = std::stoi(input[2]);
+    std::cout << "Connecting to " << ip << " " << port1 << std::endl;
 
-    std::cout << socket.connect(ip, port) << std::endl;
-    std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
+    int res = socket.connect(ip, port1);
+    if(res == sf::Socket::Done){
+        std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
+        return 1;
+    }
+    else{
+        std::cout << "Attempting port2..." << std::endl;
+
+        res = socket.connect(ip, port2);
+        if(res == sf::Socket::Done){
+            std::cout << "Connected to " << socket.getRemoteAddress() << " " << socket.getRemotePort() << std::endl;
+            return 1;
+        }else{
+            std::cout << "Failed" << std::endl;
+        }
+    }
+
 }
 
 
 void on_enter_behaviour(std::set<sf::Keyboard::Key>& pressed, std::set<sf::Keyboard::Key>& pressed_now, int& choice_index, char& current_state, 
-                         std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocket& socket, bool& running){
+                         std::ifstream& ifs, std::string& ip, int& port1, int& port2, sf::TcpSocket& socket, bool& running){
     if(!utl::key_down(sf::Keyboard::Enter, pressed)) return;
 
     if(choice_index == 0){
         current_state = single;
 
     }else if(choice_index == 1){
-        connect2server(ifs, ip, port, socket);
+        connect2server(ifs, ip, port1, port2, socket);
         
         std::string msg{"ping"};
         socket.send(msg.c_str(), msg.size() + 1);
