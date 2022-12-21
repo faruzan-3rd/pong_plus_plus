@@ -92,6 +92,7 @@ int assign_player(sf::TcpSocket& player1, sf::TcpSocket& player2, sf::TcpListene
             return -1;
         }
     }else{
+        std::cout << "wwwwwwww" << std::endl;
         if(listener.accept(player1) == sf::Socket::Done){
             return 1;
         }else{
