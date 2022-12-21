@@ -31,8 +31,10 @@ int main(){
     player1.setBlocking(false);
     player2.setBlocking(false);
 
+    std::cout << "Waiting for players" << std::endl;
     while(player1.getRemoteAddress() == sf::IpAddress::None || player2.getRemoteAddress() == sf::IpAddress::None){
         if(listener.listen(port) == sf::Socket::Done){
+            std::cout << "Port listen" << std::endl;
             int ret = assign_player(player1, player2, listener);
 
             if(ret != -1){
@@ -41,6 +43,7 @@ int main(){
             }
         }
     }
+    std::cout << "Both players have connected" << std::endl;
 
     // if(listener.listen(port) != sf::Socket::Done){
     //     std::cout << "Error" << std::endl;

@@ -166,6 +166,7 @@ void connect2server(std::ifstream& ifs, std::string& ip, int& port, sf::TcpSocke
         return;
     }
     ip = input[0]; port = std::stoi(input[1]);
+    std::cout << "Connecting to " << ip << " " << port << std::endl;
 
     socket.connect(ip, port);
 }
